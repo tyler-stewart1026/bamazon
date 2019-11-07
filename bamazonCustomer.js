@@ -1,8 +1,8 @@
-const mysql = require("mysql");
 const inquirer = require("inquirer");
+const mysql = require("mysql");
 
-let chosenItem;
 let itemStock;
+let chosenItem;
 let inStock;
 
 const connection = mysql.createConnection({
@@ -19,8 +19,7 @@ connection.connect(function (err) {
     userPrompt();
 });
 
-// display all items available for bid
-// first-ask for the ID of the product they would like to buy
+// display all available items 
 function userPrompt() {
     connection.query("SELECT * FROM products", function (err, res) {
         console.log("\n Items available for purchase:" + "\n")
@@ -74,15 +73,12 @@ function verifyQuantity() {
     inStock = chosenItem.stock_quantity;
     if (inStock - itemStock < 0) {
         console.log("Insufficient quantity!");
-        placeAnotherOrder();
+        reOrder();
     } else {
         fullfillOrder();
     }
 };
 
-// otherwise fullfill order:
-// update db to reflect remaining qty
-// once update goes through, show customer the total cost of their purchase
 function fullfillOrder() {
     newStockQty = inStock - itemStock;
     let orderTotal = itemStock * chosenItem.price;
@@ -107,13 +103,13 @@ function fullfillOrder() {
             console.log("\n Your order has successfully been placed!");
             connection.query("SELECT * FROM products", function (err, res) {
                 console.table(res);
-                placeAnotherOrder();
+                reOrder();
             })
         }
     )
 };
 
-function placeAnotherOrder() {
+function reOrder() {
     inquirer.prompt({
         type: "confirm",
         name: "yesOrNo",
